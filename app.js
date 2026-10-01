@@ -14,20 +14,34 @@ function parseCSV(t){
 }
 function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2000)}
 
+const WIKI='https://en.wiktionary.org/api/rest_v1/page/definition/';
+const plain=h=>new DOMParser().parseFromString(h||'','text/html').body.textContent.trim();
+async function jget(url){
+  const ac=new AbortController(),t=setTimeout(()=>ac.abort(),8000);
+  try{const r=await fetch(url,{signal:ac.signal});if(!r.ok)throw 0;return await r.json()}finally{clearTimeout(t)}
+}
+async function viaDict(w){
+  const e=(await jget(API+encodeURIComponent(w)))[0],ph=e.phonetics||[];
+  return{phonetic:e.phonetic||(ph.find(p=>p.text)||{}).text||'',
+    audio:(ph.find(p=>p.audio)||{}).audio||'',
+    meanings:e.meanings.map(m=>({pos:m.partOfSpeech,
+      defs:m.definitions.slice(0,2).map(d=>d.definition),
+      ex:m.definitions.map(d=>d.example).filter(Boolean).slice(0,2),
+      syn:[...new Set([...(m.synonyms||[]),...m.definitions.flatMap(d=>d.synonyms||[])])].slice(0,5)}))};
+}
+async function viaWiki(w){
+  const en=(await jget(WIKI+encodeURIComponent(w))).en||[];
+  if(!en.length)throw 0;
+  return{phonetic:'',audio:'',meanings:en.slice(0,3).map(m=>({pos:(m.partOfSpeech||'').toLowerCase(),
+    defs:m.definitions.map(d=>plain(d.definition)).filter(Boolean).slice(0,2),
+    ex:m.definitions.flatMap(d=>(d.examples||[]).map(plain)).filter(Boolean).slice(0,2),syn:[]}))};
+}
 async function getDef(w){
   const key='def:'+w,c=LS(key,null);if(c)return c;
-  try{
-    const r=await fetch(API+encodeURIComponent(w));if(!r.ok)return null;
-    const e=(await r.json())[0],ph=e.phonetics||[];
-    const out={
-      phonetic:e.phonetic||(ph.find(p=>p.text)||{}).text||'',
-      audio:(ph.find(p=>p.audio)||{}).audio||'',
-      meanings:e.meanings.map(m=>({pos:m.partOfSpeech,
-        defs:m.definitions.slice(0,2).map(d=>d.definition),
-        ex:m.definitions.map(d=>d.example).filter(Boolean).slice(0,2),
-        syn:[...new Set([...(m.synonyms||[]),...m.definitions.flatMap(d=>d.synonyms||[])])].slice(0,5)}))};
-    put(key,out);return out;
-  }catch{return null}
+  for(const src of [viaDict,viaWiki]){
+    try{const out=await src(w);if(out.meanings.length){put(key,out);return out}}catch{}
+  }
+  return null;
 }
 
 function buildList(){
@@ -48,7 +62,7 @@ function stats(){
   $('#statText').textContent=`${mast.size} mastered · ${all.length-mast.size} to go`;
   $('#barFill').style.width=(all.length?mast.size/all.length*100:0)+'%';
 }
-async function render(){
+async function render(keep){
   stats();
   const w=!done&&list[i];
   $('#card').hidden=!w;$('#empty').hidden=!!w;$('#restart').hidden=!!w||!list.length;
@@ -60,19 +74,19 @@ async function render(){
   }
   seen.add(w.word);saveSeen();
   cur=w;const my=++tok;
-  $('#card').classList.remove('flip');
+  if(!keep)$('#card').classList.remove('flip');
   $('#counter').textContent=`Word ${list.filter(x=>seen.has(x.word)).length} of ${list.length} · ${w.difficulty||''}`;
-  $('#word').textContent=w.word;$('#phon').textContent='';$('#speak').hidden=true;audio=null;
+  $('#word').textContent=w.word;$('#phon').textContent='';$('#speak').hidden=false;audio=null;
   $('#meanings').innerHTML='<p class="load">Loading…</p>';
   $('#fav').setAttribute('aria-pressed',favs.has(w.word));$('#fav').textContent=favs.has(w.word)?'★ Saved':'☆ Save';
   $('#mast').setAttribute('aria-pressed',mast.has(w.word));
   const d=await getDef(w.word);if(my!==tok)return;
   w.def=d;
   if(!d){
-    $('#meanings').innerHTML=`<h3>${esc(w.word)}</h3><p>We couldn't load this definition. Check your connection and flip the card again, or look it up in a dictionary.</p>`;return;
+    $('#meanings').innerHTML=`<h3>${esc(w.word)}</h3><p>We couldn't load this definition from either dictionary source. Check your connection, then try again.</p><button class="retry primary">Try again</button>`;return;
   }
   $('#phon').textContent=d.phonetic;
-  if(d.audio){audio=new Audio(d.audio);$('#speak').hidden=false}
+  if(d.audio)audio=new Audio(d.audio);
   $('#meanings').innerHTML=`<h3>${esc(w.word)}</h3>`+d.meanings.map(m=>`<span class="pos">${esc(m.pos)}</span><ol>${m.defs.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`
     +m.ex.map(x=>`<p class="ex">“${esc(x)}”</p>`).join('')+(m.syn.length?`<p class="syn">Synonyms: ${m.syn.map(esc).join(', ')}</p>`:'')).join('');
 }
@@ -90,7 +104,10 @@ const flip=()=>$('#card').classList.toggle('flip');
 $('#card').addEventListener('click',flip);
 $('#card').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip()}});
 document.addEventListener('keydown',e=>{if($('#home').classList.contains('active')){if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)}});
-$('#speak').onclick=e=>{e.stopPropagation();audio&&(audio.currentTime=0,audio.play().catch(()=>toast('Audio unavailable offline')))};
+$('#speak').onclick=e=>{e.stopPropagation();
+  const tts=()=>{if(!cur||!window.speechSynthesis)return toast('Audio unavailable');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(cur.word);u.lang='en-US';speechSynthesis.speak(u)};
+  if(audio){audio.currentTime=0;audio.play().catch(tts)}else tts()};
+$('#meanings').addEventListener('click',e=>{if(e.target.classList.contains('retry')){e.stopPropagation();render(true)}});
 $('#next').onclick=()=>go(1);$('#prev').onclick=()=>go(-1);
 let sx=0;const st=$('#stage');
 st.addEventListener('touchstart',e=>sx=e.changedTouches[0].clientX,{passive:true});
