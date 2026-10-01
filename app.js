@@ -45,7 +45,7 @@ async function getDef(w){
 }
 
 function buildList(){
-  list=all.filter(w=>filter==='all'||(filter==='fav'&&favs.has(w.word))||(filter==='mast'&&mast.has(w.word)));
+  list=all.filter(w=>filter==='all'||(filter==='fav'&&favs.has(w.word))||(filter==='mast'&&mast.has(w.word))||(filter==='tha'&&w.category==='Tharoorian'));
 }
 function pickNext(){
   const un=list.filter(w=>!seen.has(w.word));if(!un.length)return null;
@@ -69,7 +69,7 @@ async function render(keep){
   $$('.actions button').forEach(b=>b.disabled=!w);
   if(!w){
     $('#counter').textContent='';
-    $('#empty').textContent=!list.length?(filter==='fav'?'No saved words yet. Tap Save on a card to keep it here.':'No mastered words yet. Tap Mastered when you know a word.'):'You have seen every word in this set this session. Start a new session to go through them again.';
+    $('#empty').textContent=!list.length?(filter==='fav'?'No saved words yet. Tap Save on a card to keep it here.':filter==='mast'?'No mastered words yet. Tap Mastered when you know a word.':'No words in this set.'):'You have seen every word in this set this session. Start a new session to go through them again.';
     return;
   }
   seen.add(w.word);saveSeen();
@@ -128,8 +128,8 @@ $$('.tabs button').forEach(b=>b.onclick=()=>{
   $$('.tab').forEach(t=>t.classList.toggle('active',t.id===b.dataset.t));scrollTo(0,0)});
 $('#share').onclick=async()=>{
   const d=cur&&cur.def,def=d&&d.meanings[0]?d.meanings[0].defs[0]:'';
-  const text=cur?`${cur.word}${d&&d.phonetic?' '+d.phonetic:''}${def?' – '+def:''}`:'Lexicon vocabulary flashcards';
-  const data={title:'Lexicon',text,url:location.href.split('#')[0]};
+  const text=cur?`${cur.word}${d&&d.phonetic?' '+d.phonetic:''}${def?' – '+def:''}`:'Tharoor Words: build a vocabulary like Shashi Tharoor';
+  const data={title:'Tharoor Words',text,url:location.href.split('#')[0]};
   try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(`${text}\n${data.url}`);toast('Copied to clipboard')}}
   catch(e){if(e.name!=='AbortError')toast('Could not share')}
 };

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Lexicon – Tough Word Flashcards</title>
-<meta name="description" content="Flip through GRE/SAT-level vocabulary with pronunciations, definitions and examples. Works offline.">
+<title>Tharoor Words – Build a Vocabulary Like Shashi Tharoor</title>
+<meta name="description" content="Flashcards of rare, wonderful words in the spirit of Shashi Tharoor, with pronunciation, definitions and examples.">
 <meta name="theme-color" content="#1e1e2e">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
@@ -12,26 +12,28 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://new-word.suvadipchakraborty.workers.dev/">
 <link rel="canonical" href="https://new-word.suvadipchakraborty.workers.dev/">
-<meta property="og:title" content="Lexicon – Tough Word Flashcards">
-<meta property="og:description" content="Flip through GRE/SAT-level vocabulary with pronunciations, definitions and examples.">
+<meta property="og:title" content="Tharoor Words – Build a Vocabulary Like Shashi Tharoor">
+<meta property="og:description" content="Flashcards of rare, wonderful words in the spirit of Shashi Tharoor, with pronunciation, definitions and examples.">
 <meta property="og:image" content="https://new-word.suvadipchakraborty.workers.dev/preview.png">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Lexicon – Tough Word Flashcards">
+<meta name="twitter:title" content="Tharoor Words – Build a Vocabulary Like Shashi Tharoor">
 <meta name="twitter:description" content="GRE/SAT-level vocabulary flashcards that work offline.">
 <meta name="twitter:image" content="https://new-word.suvadipchakraborty.workers.dev/preview.png">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header>
-  <h1>Lexicon</h1>
+  <h1>Tharoor Words</h1>
   <button id="install" hidden>Install app</button>
 </header>
+<p class="tag">Build a vocabulary like Shashi Tharoor, one uncommon word at a time.</p>
 <main>
   <section id="home" class="tab active">
     <div class="stats"><span id="statText"></span><div class="bar"><i id="barFill"></i></div></div>
     <div class="chips" id="filters">
       <button data-f="all" class="on">All</button><button data-f="fav">Saved</button><button data-f="mast">Mastered</button>
+      <button data-f="tha">Tharoorian</button>
       <button id="shuffle" aria-pressed="false">Shuffle</button>
     </div>
     <p id="counter" class="counter"></p>
@@ -56,13 +58,15 @@
     <div class="nav"><button id="prev">← Previous</button><button id="next" class="primary">Next word →</button></div>
   </section>
   <section id="about" class="tab">
-    <h2>About Lexicon</h2>
-    <p>Lexicon is a free flashcard app for hard English words. Each card shows the word, how to say it, and a full definition with example sentences.</p>
+    <h2>About Tharoor Words</h2>
+    <p>Shashi Tharoor, the author and politician, is famous for sprinkling rare words such as <em>floccinaucinihilipilification</em>, <em>farrago</em> and <em>rodomontade</em> into his writing and speeches. This app helps you build a vocabulary with the same flair. Each card gives the word, how to say it, and a definition with examples.</p>
+    <p>The <strong>Tharoorian</strong> filter collects the showpiece words in that spirit. The rest are classic GRE and SAT words.</p>
     <h3>How to study</h3>
     <p>Say the word aloud, guess its meaning, then tap the card to check. Swipe left or right to move on. Save tricky words, and mark a word as mastered once you know it. Use the Saved and Mastered filters to review. Good for GRE, SAT and everyday vocabulary.</p>
     <h3>Add your own words</h3>
     <p>Fork the repository, edit <code>words.csv</code> (columns: <code>word,difficulty,category</code>), and deploy to Cloudflare Pages. Definitions load automatically.</p>
     <h3>Credits</h3>
+    <p>This is an unofficial fan project. It is not affiliated with or endorsed by Shashi Tharoor.</p>
     <p>Definitions and audio come from the <a href="https://dictionaryapi.dev" target="_blank" rel="noopener">Free Dictionary API</a>. Looked-up words are saved on your device so they work offline.</p>
   </section>
 </main>

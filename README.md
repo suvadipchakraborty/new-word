@@ -1,4 +1,6 @@
-# Lexicon – Vocabulary Flashcards
+# Tharoor Words
+
+Unofficial fan flashcards for building a Shashi Tharoor-style vocabulary. Words in the `Tharoorian` category feed the Tharoorian filter.
 
 Zero-build PWA: plain HTML, CSS and JS. Definitions and audio come from the [Free Dictionary API](https://dictionaryapi.dev).
 
@@ -8,7 +10,7 @@ Open `words.csv` and add one word per line using the columns `word,difficulty,ca
 
     ubiquitous,Advanced,General
 
-If you change shell files (`app.js`, `styles.css`, etc.), bump `V` in `sw.js` (e.g. `lexicon-v3`) so returning users get the update.
+If you change shell files (`app.js`, `styles.css`, etc.), bump `V` in `sw.js` (e.g. `lexicon-v5`) so returning users get the update.
 
 ## Deploy to Cloudflare Pages
 Push this folder to GitHub. In Cloudflare Pages, connect the repo, leave the build command empty and set the output directory to `/`.
